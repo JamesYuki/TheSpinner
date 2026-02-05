@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace JPS
+namespace Spinner
 {
     public class FollowTargetUI : MonoBehaviour
     {

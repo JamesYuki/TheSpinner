@@ -1,6 +1,6 @@
 using Cysharp.Threading.Tasks;
 
-namespace JPS
+namespace Spinner
 {
     public interface IUIModule
     {

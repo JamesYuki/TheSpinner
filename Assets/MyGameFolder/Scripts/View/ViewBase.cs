@@ -2,7 +2,7 @@ using UnityEngine;
 using System;
 using Cysharp.Threading.Tasks;
 
-namespace JPS
+namespace Spinner
 {
     /// <summary>
     /// ViewModelをセットできるViewの基底クラス（抽象）

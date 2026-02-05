@@ -2,7 +2,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 
-namespace JPS
+namespace Spinner
 {
     public class PlayerItemView : MonoBehaviour
     {

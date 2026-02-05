@@ -1,9 +1,8 @@
 using UnityEngine;
 using Unity.Cinemachine;
-using JPS.System;
 using System;
 
-namespace JPS
+namespace Spinner
 {
     public class CameraManager : MonoBehaviour
     {

@@ -3,7 +3,7 @@ using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine.PlayerLoop;
 
-namespace JPS
+namespace Spinner
 {
     /// <summary>
     /// UIモジュールの基底クラス。Show/Hide/CloseとDisposeのデフォルト実装を提供。

@@ -1,4 +1,3 @@
-using JPS.System;
 using PurrNet;
 using PurrNet.Pooling;
 using PurrNet.Prediction;
@@ -6,7 +5,7 @@ using PurrNet.Prediction.StateMachine;
 using R3;
 using UnityEngine;
 
-namespace JPS
+namespace Spinner
 {
     public class RoundRunningState : PredictedStateNode<RoundRunningState.State>
     {

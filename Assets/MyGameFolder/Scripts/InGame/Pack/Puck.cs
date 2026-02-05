@@ -3,6 +3,7 @@ using UnityEngine;
 using PurrNet;
 using PurrNet.Prediction;
 
+
 namespace Spinner
 {
     /// <summary>
@@ -29,6 +30,16 @@ namespace Spinner
 
         [SerializeField, Tooltip("ゴール判定用のレイヤー")]
         private LayerMask m_GoalLayer;
+
+        [Header("ダメージ設定")]
+        [SerializeField, Tooltip("ダメージを与える最低速度")]
+        private float m_DamageThreshold = 10f;
+
+        [SerializeField, Tooltip("速度あたりのダメージ倍率")]
+        private float m_DamageMultiplier = 1.0f;
+
+        [SerializeField, Tooltip("最大ダメージ")]
+        private float m_MaxDamage = 1.0f;
 
         private PredictedRigidbody m_Rigidbody;
 
@@ -86,12 +97,12 @@ namespace Spinner
                         // 一定速度を維持する場合は、速度の大きさを保持
                         float currentSpeed = m_Rigidbody.velocity.magnitude;
                         Vector3 newDirection = m_Rigidbody.velocity.normalized;
-                        
+
                         // 速度の大きさを維持（最大速度は超えない）
                         float maintainedSpeed = Mathf.Min(currentSpeed, m_MaxSpeed);
                         // 最低でも一定速度は保つ
                         maintainedSpeed = Mathf.Max(maintainedSpeed, m_ConstantSpeed);
-                        
+
                         m_Rigidbody.velocity = newDirection * maintainedSpeed;
                     }
                     else
@@ -102,15 +113,24 @@ namespace Spinner
                 }
             }
 
-            // // ゴール判定
-            // if (((1 << other.layer) & m_GoalLayer) != 0)
-            // {
-            //     var goal = other.GetComponent<Goal>();
-            //     if (goal != null)
-            //     {
-            //         OnGoalScored?.Invoke(goal.TeamId);
-            //     }
-            // }
+            // IDamageableを実装しているオブジェクトとの衝突処理
+            var damageable = other.GetComponent<IDamageable>();
+            if (damageable != null && damageable.IsAlive)
+            {
+                float currentSpeed = GetCurrentSpeed();
+
+                // 速度が閾値を超えている場合のみダメージを与える
+                //if (currentSpeed >= m_DamageThreshold)
+                {
+                    // 速度に応じたダメージを計算
+                    float damage = (currentSpeed - m_DamageThreshold) * m_DamageMultiplier;
+                    damage = Mathf.Min(damage, m_MaxDamage);
+
+                    damageable.TakeDamage(damage, this);
+
+                    AppLogger.Log($"パックがダメージ与えた: {damage} damage to {other.name} at speed {currentSpeed}");
+                }
+            }
         }
 
         /// <summary>

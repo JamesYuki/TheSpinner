@@ -1,37 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &1952452694637307861
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 9149545452137275356}
-  m_Layer: 0
-  m_Name: SpinnerParent
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &9149545452137275356
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1952452694637307861}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 8879531953988841954}
-  m_Father: {fileID: 5007680827867352039}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2031401790238944423
 GameObject:
   m_ObjectHideFlags: 0
@@ -167,8 +135,7 @@ GameObject:
   - component: {fileID: 6185151013248279869}
   - component: {fileID: 3991624842289065333}
   - component: {fileID: 2657240072226199080}
-  - component: {fileID: 2497658491514875554}
-  - component: {fileID: 3582287309420611697}
+  - component: {fileID: 7612316712400871553}
   m_Layer: 0
   m_Name: PlayerCore
   m_TagString: Untagged
@@ -190,7 +157,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4590159439040765176}
-  - {fileID: 9149545452137275356}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &3494973574488392270
@@ -274,7 +240,7 @@ MonoBehaviour:
   _floatAccuracy: 1
   _eventMask: 63
   _ignoreTriggerOnTrigger: 0
---- !u!114 &2497658491514875554
+--- !u!114 &7612316712400871553
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -283,115 +249,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5153630045147286431}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e2ff6456123a7ae4aa12ccf3ed5e580f, type: 3}
+  m_Script: {fileID: 11500000, guid: 04a9331a99af0b04893483772f22e1ad, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::JPS.Spinner.SpinnerController
-  _repeatInputFactor: 0.8
-  _extrapolateInput: 1
-  m_Settings: {fileID: 11400000, guid: dd200771d691c69459eb32adcb9095bc, type: 2}
-  m_ArmRigidbody: {fileID: 8340871615378562162}
-  m_LeftArmCollider: {fileID: 3171260231446881551}
-  m_RightArmCollider: {fileID: 6947539574722824835}
-  m_ImpactMultiplier: 2
-  m_MaxImpactVelocity: 50
---- !u!114 &3582287309420611697
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5153630045147286431}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 138a926df4e50894b94b42236150b2c3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Spinner.SpinnerInputHandler
---- !u!1001 &3757018075179564466
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 9149545452137275356}
-    m_Modifications:
-    - target: {fileID: 446548625340452879, guid: d6835b4ed6c167b429a1eb09fb95bd48, type: 3}
-      propertyPath: m_Name
-      value: Player_Spinner
-      objectReference: {fileID: 0}
-    - target: {fileID: 1007588573230554848, guid: d6835b4ed6c167b429a1eb09fb95bd48, type: 3}
-      propertyPath: m_Constraints
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5699854313723038800, guid: d6835b4ed6c167b429a1eb09fb95bd48, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5699854313723038800, guid: d6835b4ed6c167b429a1eb09fb95bd48, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5699854313723038800, guid: d6835b4ed6c167b429a1eb09fb95bd48, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5699854313723038800, guid: d6835b4ed6c167b429a1eb09fb95bd48, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5699854313723038800, guid: d6835b4ed6c167b429a1eb09fb95bd48, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5699854313723038800, guid: d6835b4ed6c167b429a1eb09fb95bd48, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5699854313723038800, guid: d6835b4ed6c167b429a1eb09fb95bd48, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5699854313723038800, guid: d6835b4ed6c167b429a1eb09fb95bd48, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5699854313723038800, guid: d6835b4ed6c167b429a1eb09fb95bd48, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5699854313723038800, guid: d6835b4ed6c167b429a1eb09fb95bd48, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 9140708261007732139, guid: d6835b4ed6c167b429a1eb09fb95bd48, type: 3}
-    - {fileID: 2241907030488305328, guid: d6835b4ed6c167b429a1eb09fb95bd48, type: 3}
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: d6835b4ed6c167b429a1eb09fb95bd48, type: 3}
---- !u!136 &3171260231446881551 stripped
-CapsuleCollider:
-  m_CorrespondingSourceObject: {fileID: 1738680175127320765, guid: d6835b4ed6c167b429a1eb09fb95bd48, type: 3}
-  m_PrefabInstance: {fileID: 3757018075179564466}
-  m_PrefabAsset: {fileID: 0}
---- !u!136 &6947539574722824835 stripped
-CapsuleCollider:
-  m_CorrespondingSourceObject: {fileID: 6073388211065730865, guid: d6835b4ed6c167b429a1eb09fb95bd48, type: 3}
-  m_PrefabInstance: {fileID: 3757018075179564466}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &8340871615378562162 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5180026338308497856, guid: d6835b4ed6c167b429a1eb09fb95bd48, type: 3}
-  m_PrefabInstance: {fileID: 3757018075179564466}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 939517533de889a4f948d4e2041fb798, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PurrNet.Prediction::PurrNet.Prediction.PredictedRigidbody
---- !u!4 &8879531953988841954 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5699854313723038800, guid: d6835b4ed6c167b429a1eb09fb95bd48, type: 3}
-  m_PrefabInstance: {fileID: 3757018075179564466}
-  m_PrefabAsset: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::Spinner.PlayerCore
+  m_SpinnerParent: {fileID: 0}

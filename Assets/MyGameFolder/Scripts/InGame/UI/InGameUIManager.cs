@@ -1,9 +1,8 @@
 using System;
-using JPS.System;
 using PurrNet.Prediction.StateMachine;
 using UnityEngine;
 
-namespace JPS
+namespace Spinner
 {
     public class InGameUIManager : MonoBehaviour
     {

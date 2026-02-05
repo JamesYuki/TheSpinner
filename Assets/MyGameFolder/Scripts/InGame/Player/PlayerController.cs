@@ -1,9 +1,8 @@
 using UnityEngine;
 using PurrNet;
 using PurrNet.Prediction;
-using JPS.System;
 
-namespace JPS
+namespace Spinner
 {
     public class PlayerController : PredictedIdentity<MoveInput, MoveState>
     {
@@ -21,8 +20,6 @@ namespace JPS
 
         private PlayerInputHandler m_Input;
         private PredictedRigidbody m_Rigidbody;
-        private float m_InitialRotationY;
-        private bool m_InitialRotationSet;
 
         private void Awake()
         {
@@ -52,12 +49,6 @@ namespace JPS
             AppLogger.Log("PlayerController OnCollisionStart with another PlayerController");
         }
 
-        protected override void LateAwake()
-        {
-            m_InitialRotationY = transform.eulerAngles.y;
-            m_InitialRotationSet = true;
-        }
-
         protected override void UpdateInput(ref MoveInput input)
         {
         }
@@ -81,7 +72,7 @@ namespace JPS
             // 角度を-90~90度の範囲に強制的にクランプ
             bool wasAtRightLimit = false;
             bool wasAtLeftLimit = false;
-            
+
             if (currentY >= 90f)
             {
                 currentY = 90f;

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace JPS.UI
+namespace Spinner.UI
 {
     public class GameUI : BaseUIModule
     {

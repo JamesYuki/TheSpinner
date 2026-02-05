@@ -1,8 +1,8 @@
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-using JPS.System;
+using Spinner.System;
 
-namespace JPS
+namespace Spinner
 {
     public class TitleScene : BaseGameScene
     {

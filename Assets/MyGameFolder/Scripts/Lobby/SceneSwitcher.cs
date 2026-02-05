@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
-namespace JPS
+namespace Spinner
 {
     public class SceneSwitcher : MonoBehaviour
     {

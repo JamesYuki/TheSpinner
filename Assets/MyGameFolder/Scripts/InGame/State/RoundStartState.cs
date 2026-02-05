@@ -1,9 +1,8 @@
-using JPS.System;
 using PurrNet.Prediction;
 using PurrNet.Prediction.StateMachine;
 using UnityEngine;
 
-namespace JPS
+namespace Spinner
 {
     public class RoundStartState : PredictedStateNode<RoundStartState.State>
     {

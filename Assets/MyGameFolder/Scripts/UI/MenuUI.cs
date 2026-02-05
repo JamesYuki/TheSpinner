@@ -1,9 +1,8 @@
 using Cysharp.Threading.Tasks;
 using UnityEngine.AddressableAssets;
 using UnityEngine;
-using JPS.System;
 
-namespace JPS.UI
+namespace Spinner.UI
 {
     public class MenuUI : BaseUIModule, IMenuUI
     {

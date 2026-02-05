@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace JPS
+namespace Spinner
 {
     using System;
     public class PlayerInputHandler : MonoBehaviour

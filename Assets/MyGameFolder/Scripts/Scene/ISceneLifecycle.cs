@@ -1,4 +1,4 @@
-namespace JPS
+namespace Spinner
 {
     public interface ISceneLifecycle
     {

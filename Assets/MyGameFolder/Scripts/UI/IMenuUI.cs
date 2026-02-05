@@ -1,6 +1,6 @@
 using Cysharp.Threading.Tasks;
 
-namespace JPS.UI
+namespace Spinner.UI
 {
     /// <summary>
     /// UIのロード先を用途で分けるインターフェース

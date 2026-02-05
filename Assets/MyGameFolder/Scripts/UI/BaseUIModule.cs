@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace JPS.UI
+namespace Spinner.UI
 {
     [RequireComponent(typeof(Canvas))]
     public abstract class BaseUIModule : MonoBehaviour

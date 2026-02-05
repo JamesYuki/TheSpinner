@@ -2,14 +2,14 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 
-namespace JPS.System.Editor
+namespace Spinner.System.Editor
 {
     public static class SceneEnumGenerator
     {
         private const string SceneFolderPath = "Assets/AddressableAssets/Scene";
         private const string OutputPath = "Assets/MyGameFolder/Scripts/System/SceneEnum.cs";
 
-        [MenuItem("Tools/Generate SceneEnum")] 
+        [MenuItem("Tools/Generate SceneEnum")]
         public static void Generate()
         {
             var sceneFiles = Directory.GetFiles(SceneFolderPath, "*.unity")
@@ -20,7 +20,7 @@ namespace JPS.System.Editor
             var enumEntries = sceneFiles.Select(name => $"        {name},");
             var enumBody = string.Join("\n", enumEntries);
 
-            var code = $@"namespace JPS.System
+            var code = $@"namespace Spinner.System
 {{
     // このenumはAddressableAssets/Scene内のシーンファイルから自動生成されています。
     public enum SceneEnum

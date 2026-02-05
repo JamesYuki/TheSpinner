@@ -1,5 +1,4 @@
 using System;
-using JPS;
 using PurrNet;
 using PurrNet.Prediction;
 using TMPro;

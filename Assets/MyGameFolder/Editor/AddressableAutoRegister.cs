@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 #if UNITY_EDITOR
 
-namespace JPS.Editor
+namespace Spinner.Editor
 {
     public class AddressableAutoRegister : AssetPostprocessor
     {

@@ -1,6 +1,6 @@
 
 
-namespace JPS
+namespace Spinner
 {
     public class PlayerSpawningUI : InGameStateUIBase<PlayerSpawningState>
     {

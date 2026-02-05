@@ -1,7 +1,7 @@
 using TMPro;
 using UnityEngine;
 
-namespace JPS
+namespace Spinner
 {
 
     public class RoundStartUI : InGameStateUIBase<RoundStartState>

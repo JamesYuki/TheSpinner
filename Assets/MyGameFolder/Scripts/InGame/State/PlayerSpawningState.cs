@@ -1,11 +1,9 @@
 using System.Collections.Generic;
-using JPS.System;
 using PurrNet.Prediction;
 using PurrNet.Prediction.StateMachine;
-using Spinner;
 using UnityEngine;
 
-namespace JPS
+namespace Spinner
 {
     public class PlayerSpawningState : PredictedStateNode<PlayerSpawningState.State>
     {
@@ -43,24 +41,18 @@ namespace JPS
                     player
                 );
 
-                // SpinnerをPlayerCoreに関連付け
-                if (playerCoreId.HasValue && spinnerId.HasValue)
-                {
-                    var playerCore = playerCoreId.GetComponent<PlayerCore>(predictionManager);
-                    var spinnerController = spinnerId.GetComponent<SpinnerController>(predictionManager);
+                // if (playerCoreId.HasValue && spinnerId.HasValue)
+                // {
+                //     var playerCore = playerCoreId.GetComponent<PlayerCore>(predictionManager);
+                //     var spinnerController = spinnerId.GetComponent<SpinnerController>(predictionManager);
 
-                    if (playerCore != null && spinnerController != null)
-                    {
-                        // SpinnerをPlayerCoreの子にする
-                        var spinnerTransform = spinnerController.transform;
-                        spinnerTransform.SetParent(playerCore.SpinnerParent);
-                        spinnerTransform.localPosition = Vector3.zero;
-                        spinnerTransform.localRotation = Quaternion.identity;
-
-                        // 参照を設定
-                        playerCore.SetSpinner(spinnerController);
-                    }
-                }
+                //     if (playerCore != null && spinnerController != null)
+                //     {
+                //         var spinnerTransform = spinnerController.transform;
+                //         spinnerTransform.localPosition = Vector3.zero;
+                //         spinnerTransform.localRotation = Quaternion.identity;
+                //     }
+                // }
             }
 
             machine.Next();

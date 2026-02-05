@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace JPS.System
+namespace Spinner.System
 {
     /// <summary>
     /// 複数のIDisposableをまとめて管理・一括Disposeできるクラス。

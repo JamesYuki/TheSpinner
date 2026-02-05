@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace JPS
+namespace Spinner
 {
     public class TitleUIModule : UIModule
     {

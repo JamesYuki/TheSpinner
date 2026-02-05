@@ -1,9 +1,8 @@
-using JPS.System;
 using PurrNet.Prediction.StateMachine;
 using TMPro;
 using UnityEngine;
 
-namespace JPS
+namespace Spinner
 {
     public class WaitForPlayersUI : InGameStateUIBase<WaitForPlayerState>
     {

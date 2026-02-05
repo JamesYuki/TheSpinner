@@ -1,4 +1,4 @@
-namespace JPS.System
+namespace Spinner.System
 {
     // このenumはAddressableAssets/Scene内のシーンファイルから自動生成されています。
     public enum SceneEnum

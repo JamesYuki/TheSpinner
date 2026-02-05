@@ -1527,6 +1527,9 @@ MonoBehaviour:
   m_GoalLayer:
     serializedVersion: 2
     m_Bits: 0
+  m_DamageThreshold: 10
+  m_DamageMultiplier: 1
+  m_MaxDamage: 1
 --- !u!1 &1055506602
 GameObject:
   m_ObjectHideFlags: 0
@@ -2799,8 +2802,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdcdae20da3ef1040b91dcdb71395811, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_PlayerCorePrefab: {fileID: 2240104742084040929, guid: d1a5d1d9aad63a049b7f610ff715826e, type: 3}
-  m_SpinnerPrefab: {fileID: 0}
+  m_PlayerCorePrefab: {fileID: 5153630045147286431, guid: 688e3aec4bc3fc1478f3c2233b4179ca, type: 3}
+  m_SpinnerPrefab: {fileID: 2240104742084040929, guid: d1a5d1d9aad63a049b7f610ff715826e, type: 3}
   m_SpawnPoints:
   - {fileID: 1425080765}
   - {fileID: 511723372}
