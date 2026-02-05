@@ -2549,7 +2549,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_LobbyManager: {fileID: 1097043115}
-  m_NextScene: InGame_Temp
+  m_NextScene: InGame
 --- !u!1 &1101296062
 GameObject:
   m_ObjectHideFlags: 0

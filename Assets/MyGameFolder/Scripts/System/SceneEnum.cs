@@ -5,7 +5,6 @@ namespace Spinner.System
     {
         None = 0,
         InGame,
-        InGame_Temp,
         Lobby,
     }
 }
