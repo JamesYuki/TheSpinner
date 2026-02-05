@@ -28,9 +28,6 @@ namespace Spinner
         [SerializeField, Tooltip("壁での反射時の速度維持率")]
         private float m_WallBounceRetention = 0.8f;
 
-        [SerializeField, Tooltip("ゴール判定用のレイヤー")]
-        private LayerMask m_GoalLayer;
-
         [Header("ダメージ設定")]
         [SerializeField, Tooltip("ダメージを与える最低速度")]
         private float m_DamageThreshold = 10f;
@@ -42,9 +39,6 @@ namespace Spinner
         private float m_MaxDamage = 1.0f;
 
         private PredictedRigidbody m_Rigidbody;
-
-        // イベント
-        public Action<int> OnGoalScored; // int = ゴールしたチームID
 
         public struct PuckState : IPredictedData<PuckState>
         {
