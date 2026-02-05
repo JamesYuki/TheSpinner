@@ -6,6 +6,7 @@
 1. **コンパイルエラーを残さない** - コード変更後は必ず `get_errors` でエラーチェックを行い、エラーがある場合は修正してから完了する
 
 ### PurrNet 関連
+**細かい仕様は  "PurrNet_Documents.md"を確認して**
 
 #### hierarchy.Create の使い方
 `hierarchy.Create` は `PredictedObjectID?` を返す。`GameObject` ではない。
