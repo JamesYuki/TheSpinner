@@ -136,6 +136,7 @@ GameObject:
   - component: {fileID: 3991624842289065333}
   - component: {fileID: 2657240072226199080}
   - component: {fileID: 7612316712400871553}
+  - component: {fileID: 6027543873119718246}
   m_Layer: 0
   m_Name: PlayerCore
   m_TagString: Untagged
@@ -252,4 +253,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04a9331a99af0b04893483772f22e1ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Spinner.PlayerCore
-  m_SpinnerParent: {fileID: 0}
+  m_TeamId: 0
+--- !u!114 &6027543873119718246
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5153630045147286431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b330568c75ac6a4383917d14dae9bae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Spinner.PlayerHealth
+  m_MaxHealth: 3
+  m_TeamId: 0
+  m_PlayerIndex: 0
+  m_DeathEffect: {fileID: 0}

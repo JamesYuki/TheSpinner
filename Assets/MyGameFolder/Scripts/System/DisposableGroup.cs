@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Spinner.System
+namespace Spinner
 {
     /// <summary>
     /// 複数のIDisposableをまとめて管理・一括Disposeできるクラス。

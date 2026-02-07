@@ -4,7 +4,7 @@ using UnityEditor.AssetImporters;
 using System.IO;
 using System.Linq;
 
-namespace Spinner.System.Editor
+namespace Spinner.Editor
 {
     public class SceneEnumAutoGenerator : AssetPostprocessor
     {
@@ -31,7 +31,7 @@ namespace Spinner.System.Editor
             var enumEntries = sceneFiles.Select(name => $"        {name},");
             var enumBody = string.Join("\n", enumEntries);
 
-            var code = $@"namespace Spinner.System
+            var code = $@"namespace Spinner
 {{
     // このenumはAddressableAssets/Scene内のシーンファイルから自動生成されています。
     public enum SceneEnum

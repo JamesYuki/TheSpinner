@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-using Spinner.System;
 
 namespace Spinner
 {

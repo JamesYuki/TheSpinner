@@ -41,19 +41,10 @@ namespace Spinner
                     player
                 );
 
-                // if (playerCoreId.HasValue && spinnerId.HasValue)
-                // {
-                //     var playerCore = playerCoreId.GetComponent<PlayerCore>(predictionManager);
-                //     var spinnerController = spinnerId.GetComponent<SpinnerController>(predictionManager);
-
-                //     if (playerCore != null && spinnerController != null)
-                //     {
-                //         var spinnerTransform = spinnerController.transform;
-                //         spinnerTransform.localPosition = Vector3.zero;
-                //         spinnerTransform.localRotation = Quaternion.identity;
-                //     }
-                // }
+                AppLogger.Log($"プレイヤー生成: PlayerID={player}, PlayerCoreID={playerCoreId}, SpinnerID={spinnerId}");
             }
+
+            // UIはPlayerHealth.LateAwake()で各自登録される
 
             machine.Next();
         }

@@ -2,7 +2,7 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 
-namespace Spinner.System.Editor
+namespace Spinner.Editor
 {
     public static class SceneEnumGenerator
     {
@@ -20,7 +20,7 @@ namespace Spinner.System.Editor
             var enumEntries = sceneFiles.Select(name => $"        {name},");
             var enumBody = string.Join("\n", enumEntries);
 
-            var code = $@"namespace Spinner.System
+            var code = $@"namespace Spinner
 {{
     // このenumはAddressableAssets/Scene内のシーンファイルから自動生成されています。
     public enum SceneEnum

@@ -6,10 +6,6 @@ using PurrNet.Prediction;
 
 namespace Spinner
 {
-    /// <summary>
-    /// ホッケーのパック
-    /// スピナープレイヤーの回転によって打ち出される
-    /// </summary>
     public class Puck : PredictedIdentity<Puck.PuckState>
     {
         [Header("設定")]
@@ -26,7 +22,7 @@ namespace Spinner
         private bool m_MaintainConstantSpeed = true;
 
         [SerializeField, Tooltip("壁での反射時の速度維持率")]
-        private float m_WallBounceRetention = 0.8f;
+        private float m_WallBounceRetention = 0.95f;
 
         [Header("ダメージ設定")]
         [SerializeField, Tooltip("ダメージを与える最低速度")]
@@ -38,7 +34,15 @@ namespace Spinner
         [SerializeField, Tooltip("最大ダメージ")]
         private float m_MaxDamage = 1.0f;
 
+        [Header("ビジュアル設定")]
+        [SerializeField, Tooltip("速度に応じた色のグラデーション（0=停止時、1=最大速度時）")]
+        private Gradient m_SpeedColorGradient;
+
+        [SerializeField, Tooltip("色を変更するレンダラー")]
+        private Renderer m_Renderer;
+
         private PredictedRigidbody m_Rigidbody;
+        private MaterialPropertyBlock m_PropertyBlock;
 
         public struct PuckState : IPredictedData<PuckState>
         {
@@ -53,6 +57,13 @@ namespace Spinner
         private void Awake()
         {
             m_Rigidbody = GetComponent<PredictedRigidbody>();
+
+            if (m_Renderer == null)
+            {
+                m_Renderer = GetComponent<Renderer>();
+            }
+
+            m_PropertyBlock = new MaterialPropertyBlock();
         }
 
         protected override void LateAwake()
@@ -83,26 +94,21 @@ namespace Spinner
             // 壁との衝突処理
             if (other.CompareTag(Tags.Wall))
             {
-                // 反射処理はRigidbodyの物理演算に任せる
-                if (m_Rigidbody != null)
+                if (m_Rigidbody != null && collision.contacts.Count > 0)
                 {
+                    Vector3 contactNormal = collision.contacts[0].normal;
+                    Vector3 currentVelocity = m_Rigidbody.velocity;
+                    float currentSpeed = currentVelocity.magnitude;
+                    Vector3 reflectedVelocity = Vector3.Reflect(currentVelocity, contactNormal);
+
                     if (m_MaintainConstantSpeed)
                     {
-                        // 一定速度を維持する場合は、速度の大きさを保持
-                        float currentSpeed = m_Rigidbody.velocity.magnitude;
-                        Vector3 newDirection = m_Rigidbody.velocity.normalized;
-
-                        // 速度の大きさを維持（最大速度は超えない）
-                        float maintainedSpeed = Mathf.Min(currentSpeed, m_MaxSpeed);
-                        // 最低でも一定速度は保つ
-                        maintainedSpeed = Mathf.Max(maintainedSpeed, m_ConstantSpeed);
-
-                        m_Rigidbody.velocity = newDirection * maintainedSpeed;
+                        float maintainedSpeed = Mathf.Clamp(currentSpeed, m_ConstantSpeed, m_MaxSpeed);
+                        m_Rigidbody.velocity = reflectedVelocity.normalized * maintainedSpeed;
                     }
                     else
                     {
-                        // 一定速度維持モードでない場合は従来通り減衰
-                        m_Rigidbody.velocity *= m_WallBounceRetention;
+                        m_Rigidbody.velocity = reflectedVelocity * m_WallBounceRetention;
                     }
                 }
             }
@@ -114,9 +120,8 @@ namespace Spinner
                 float currentSpeed = GetCurrentSpeed();
 
                 // 速度が閾値を超えている場合のみダメージを与える
-                //if (currentSpeed >= m_DamageThreshold)
+                if (currentSpeed >= m_DamageThreshold)
                 {
-                    // 速度に応じたダメージを計算
                     float damage = (currentSpeed - m_DamageThreshold) * m_DamageMultiplier;
                     damage = Mathf.Min(damage, m_MaxDamage);
 
@@ -134,16 +139,13 @@ namespace Spinner
         {
             if (m_Rigidbody == null) return;
 
-            // 既存の速度に衝撃を加算
             Vector3 newVelocity = m_Rigidbody.velocity + force;
 
-            // 最大速度を制限
             if (newVelocity.magnitude > m_MaxSpeed)
             {
                 newVelocity = newVelocity.normalized * m_MaxSpeed;
             }
 
-            // 一定速度を維持する場合は、最低速度も保証
             if (m_MaintainConstantSpeed && newVelocity.magnitude < m_ConstantSpeed)
             {
                 newVelocity = newVelocity.normalized * m_ConstantSpeed;
@@ -177,7 +179,6 @@ namespace Spinner
             transform.position = position;
             if (m_Rigidbody != null)
             {
-                // 初期速度が指定されていない場合は、ランダムな方向に一定速度で開始
                 if (initialVelocity == Vector3.zero && m_MaintainConstantSpeed)
                 {
                     Vector3 randomDirection = new Vector3(
@@ -204,21 +205,17 @@ namespace Spinner
                     // 一定速度を維持するモード
                     if (velocity.magnitude > 0.1f) // わずかでも動いている場合
                     {
-                        // 現在の方向を保持しつつ、速度を一定に保つ
                         Vector3 direction = velocity.normalized;
                         float currentSpeed = velocity.magnitude;
 
-                        // 最大速度を超えている場合は制限
                         if (currentSpeed > m_MaxSpeed)
                         {
                             velocity = direction * m_MaxSpeed;
                         }
-                        // 一定速度を下回っている場合は、一定速度まで上げる
                         else if (currentSpeed < m_ConstantSpeed)
                         {
                             velocity = direction * m_ConstantSpeed;
                         }
-                        // それ以外は現在の速度を維持（摩擦を適用しない）
                     }
                     else
                     {
@@ -233,13 +230,33 @@ namespace Spinner
                 }
                 else
                 {
-                    // 従来の摩擦による減速
                     velocity = Vector3.MoveTowards(velocity, Vector3.zero, m_Friction * delta);
                 }
 
                 m_Rigidbody.velocity = velocity;
                 state.Velocity = velocity;
             }
+
+            UpdateColorBySpeed();
+        }
+
+        /// <summary>
+        /// 速度に応じて色を更新
+        /// </summary>
+        private void UpdateColorBySpeed()
+        {
+            if (m_Renderer == null || m_SpeedColorGradient == null || m_Rigidbody == null)
+                return;
+
+            float currentSpeed = m_Rigidbody.velocity.magnitude;
+            float normalizedSpeed = Mathf.Clamp01(currentSpeed / m_MaxSpeed);
+
+            Color speedColor = m_SpeedColorGradient.Evaluate(normalizedSpeed);
+
+            m_Renderer.GetPropertyBlock(m_PropertyBlock);
+            m_PropertyBlock.SetColor("_Color", speedColor);
+            m_PropertyBlock.SetColor("_BaseColor", speedColor); // URPの場合
+            m_Renderer.SetPropertyBlock(m_PropertyBlock);
         }
 
         private void OnDrawGizmosSelected()
@@ -249,11 +266,24 @@ namespace Spinner
 
             if (m_Rigidbody != null)
             {
-                // 現在の速度ベクトル
+                float currentSpeed = m_Rigidbody.velocity.magnitude;
+
                 Gizmos.color = Color.red;
                 Gizmos.DrawLine(transform.position, transform.position + m_Rigidbody.velocity * 0.5f);
 
-                // 一定速度を維持する場合は、最小速度の円も表示
+#if UNITY_EDITOR
+                UnityEditor.Handles.Label(
+                    transform.position + Vector3.up * 1f,
+                    $"Speed: {currentSpeed:F2} m/s\nMax: {m_MaxSpeed:F1}\nMin: {m_ConstantSpeed:F1}",
+                    new GUIStyle()
+                    {
+                        normal = new GUIStyleState() { textColor = Color.white },
+                        fontSize = 12,
+                        fontStyle = FontStyle.Bold
+                    }
+                );
+#endif
+
                 if (m_MaintainConstantSpeed)
                 {
                     Gizmos.color = Color.green;
