@@ -137,8 +137,8 @@ GameObject:
   - component: {fileID: -9218989847494065919}
   - component: {fileID: 623890134718152407}
   - component: {fileID: 367395330888295889}
-  - component: {fileID: 4891627828620898212}
-  - component: {fileID: 5912922847627060038}
+  - component: {fileID: 7067159259650148619}
+  - component: {fileID: 190179233061288522}
   m_Layer: 6
   m_Name: PlayerController
   m_TagString: Player
@@ -253,8 +253,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JPS.PlayerInputHandler
   m_EnableMouse: 1
---- !u!136 &4891627828620898212
-CapsuleCollider:
+--- !u!65 &7067159259650148619
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -271,13 +271,11 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 4
-  m_Direction: 0
+  serializedVersion: 3
+  m_Size: {x: 4, y: 1, z: 1}
   m_Center: {x: 2.7, y: 0, z: 0}
---- !u!136 &5912922847627060038
-CapsuleCollider:
+--- !u!65 &190179233061288522
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -294,10 +292,8 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 4
-  m_Direction: 0
+  serializedVersion: 3
+  m_Size: {x: 4, y: 1, z: 1}
   m_Center: {x: -2.7, y: 0, z: 0}
 --- !u!1 &5302840476679564934
 GameObject:

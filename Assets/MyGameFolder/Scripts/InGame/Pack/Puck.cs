@@ -1,8 +1,8 @@
 using System;
 using UnityEngine;
+using Cysharp.Threading.Tasks;
 using PurrNet;
 using PurrNet.Prediction;
-
 
 namespace Spinner
 {
@@ -41,8 +41,16 @@ namespace Spinner
         [SerializeField, Tooltip("色を変更するレンダラー")]
         private Renderer m_Renderer;
 
+        [Header("テレポート設定")]
+        [SerializeField, Tooltip("テレポート後の再テレポート防止クールダウン（秒）")]
+        private float m_TeleportCooldown = 0.5f;
+
         private PredictedRigidbody m_Rigidbody;
         private MaterialPropertyBlock m_PropertyBlock;
+
+        private float m_TeleportCooldownTimer;
+
+        private TeleportManager TeleportManager => ServiceLocator.Service<TeleportManager>();
 
         public struct PuckState : IPredictedData<PuckState>
         {
@@ -86,9 +94,54 @@ namespace Spinner
             }
         }
 
+        /// <summary>
+        /// Unity ネイティブのトリガー検知
+        /// </summary>
+        private void OnTriggerEnter(Collider other)
+        {
+            // 予測シミュレーション中のみテレポート処理を実行
+            if (predictionManager != null && predictionManager.isSimulating && !predictionManager.isVerifiedAndReplaying)
+            {
+                HandleTeleportTrigger(other.gameObject);
+            }
+        }
+
+
+
+        /// <summary>
+        /// テレポート処理の共通ロジック
+        /// </summary>
+        private void HandleTeleportTrigger(GameObject other)
+        {
+            if (other == null) return;
+
+            // クールダウン中はテレポートしない
+            if (m_TeleportCooldownTimer > 0f)
+                return;
+
+            var teleportZone = other.GetComponent<TeleportZone>();
+            if (teleportZone == null)
+                return;
+
+            // テレポート前に現在速度を保存し、パックを停止させる
+            float currentSpeed = GetCurrentSpeed();
+            teleportZone.SetEntrySpeed(currentSpeed);
+
+            // パックを完全に停止（直線速度と回転速度の両方をゼロに）
+            if (m_Rigidbody != null)
+            {
+                m_Rigidbody.velocity = Vector3.zero;
+                m_Rigidbody.angularVelocity = Vector3.zero;
+            }
+
+            if (TeleportManager != null && TeleportManager.TryTeleport(teleportZone, this))
+            {
+                m_TeleportCooldownTimer = m_TeleportCooldown;
+            }
+        }
+
         private void OnCollisionStart(GameObject other, PhysicsCollision collision)
         {
-            // nullチェック
             if (other == null) return;
 
             // 壁との衝突処理
@@ -172,6 +225,60 @@ namespace Spinner
         }
 
         /// <summary>
+        /// パックをテレポートさせる（位置と速度を直接設定）
+        /// PredictedRigidbodyを一時無効化して瞬間移動を実現
+        /// </summary>
+        public void Teleport(Vector3 position, Vector3 velocity)
+        {
+            if (m_Rigidbody != null)
+            {
+                TeleportAsync(position, velocity).Forget();
+            }
+            else
+            {
+                var targetPosition = position;
+                targetPosition.y = transform.position.y;
+                transform.position = targetPosition;
+            }
+        }
+
+        /// <summary>
+        /// テレポート処理（UniTask版）
+        /// 一時的にPredictedIdentityとRigidbodyを無効化して位置を設定し、次のフレームで再有効化
+        /// これによりPredictedTransformの補間を防ぐ
+        /// </summary>
+        private async UniTask TeleportAsync(Vector3 position, Vector3 velocity)
+        {
+            // PredictedIdentity自体を一時無効化してネットワーク同期を停止
+            bool wasThisEnabled = enabled;
+            bool wasRigidbodyEnabled = m_Rigidbody.enabled;
+
+            enabled = false;
+            m_Rigidbody.enabled = false;
+
+            // Rigidbody.positionを使用してTransform補間を回避
+            var targetPosition = position;
+            targetPosition.y = m_Rigidbody.position.y;
+            m_Rigidbody.position = targetPosition;
+
+            // 次フレーム待機
+            await UniTask.NextFrame();
+
+            if (wasThisEnabled)
+            {
+                enabled = true;
+            }
+            if (wasRigidbodyEnabled)
+            {
+                m_Rigidbody.enabled = true;
+            }
+
+            m_Rigidbody.velocity = velocity;
+
+            AppLogger.Log($"[Puck] テレポート完了: Pos={targetPosition}, Vel={velocity}");
+        }
+
+        /// <summary>
         /// パックをリセット（ゴール後など）
         /// </summary>
         public void ResetPuck(Vector3 position, Vector3 initialVelocity = default)
@@ -235,6 +342,12 @@ namespace Spinner
 
                 m_Rigidbody.velocity = velocity;
                 state.Velocity = velocity;
+            }
+
+            // テレポートクールダウンを減少
+            if (m_TeleportCooldownTimer > 0f)
+            {
+                m_TeleportCooldownTimer -= delta;
             }
 
             UpdateColorBySpeed();

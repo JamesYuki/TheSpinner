@@ -9,6 +9,12 @@ namespace Spinner
 {
     public class RoundRunningState : PredictedStateNode<RoundRunningState.State>
     {
+        [Header("パック設定")]
+        [SerializeField, Tooltip("パックプレハブ")]
+        private GameObject m_PuckPrefab;
+
+        [SerializeField, Tooltip("パックの初期位置")]
+        private Transform m_PuckSpawnPoint;
         private void Awake()
         {
             // PlayerHealth.OnDeathHandler += OnPlayerDeath;
@@ -41,6 +47,33 @@ namespace Spinner
             currentState = state;
 
             ServiceLocator.Service<InGameUIManager>().ActiveStateUI(this);
+
+            // テレポートシステムの初期化（サーバーのみ）
+            if (predictionManager.isServer)
+            {
+                var teleportManager = ServiceLocator.Service<TeleportManager>();
+                if (teleportManager != null)
+                {
+                    teleportManager.InitializeForRound();
+                    AppLogger.Log("[RoundRunning] テレポートシステムを初期化しました");
+                }
+
+                // パックを生成
+                if (m_PuckPrefab != null && m_PuckSpawnPoint != null)
+                {
+                    var puckId = predictionManager.hierarchy.Create(
+                        m_PuckPrefab,
+                        m_PuckSpawnPoint.position,
+                        m_PuckSpawnPoint.rotation,
+                        null // パックはオーナーなし
+                    );
+                    AppLogger.Log($"[RoundRunning] パックを生成しました: PuckID={puckId}");
+                }
+                else
+                {
+                    AppLogger.LogWarning("[RoundRunning] パックプレハブまたはスポーン位置が設定されていません");
+                }
+            }
         }
 
         public override void Exit()

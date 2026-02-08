@@ -140,8 +140,8 @@ MonoBehaviour:
   m_MaxDamage: 1
   m_SpeedColorGradient:
     serializedVersion: 2
-    key0: {r: 1, g: 1, b: 1, a: 1}
-    key1: {r: 1, g: 1, b: 1, a: 1}
+    key0: {r: 1, g: 0.95554936, b: 0, a: 1}
+    key1: {r: 1, g: 0.25988027, b: 0, a: 1}
     key2: {r: 0, g: 0, b: 0, a: 0}
     key3: {r: 0, g: 0, b: 0, a: 0}
     key4: {r: 0, g: 0, b: 0, a: 0}
@@ -165,10 +165,11 @@ MonoBehaviour:
     atime6: 0
     atime7: 0
     m_Mode: 0
-    m_ColorSpace: -1
+    m_ColorSpace: 0
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
   m_Renderer: {fileID: 8272065739462416770}
+  m_TeleportCooldown: 0.5
 --- !u!1 &7559702034071515843
 GameObject:
   m_ObjectHideFlags: 0
