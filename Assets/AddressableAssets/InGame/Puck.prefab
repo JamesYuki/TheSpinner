@@ -169,6 +169,7 @@ MonoBehaviour:
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
   m_Renderer: {fileID: 8272065739462416770}
+  m_VisualObject: {fileID: 7559702034071515843}
   m_TeleportCooldown: 0.5
 --- !u!1 &7559702034071515843
 GameObject:

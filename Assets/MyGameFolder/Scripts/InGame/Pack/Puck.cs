@@ -41,6 +41,9 @@ namespace Spinner
         [SerializeField, Tooltip("色を変更するレンダラー")]
         private Renderer m_Renderer;
 
+        [SerializeField, Tooltip("テレポート時に非表示にするビジュアルオブジェクト（未設定の場合はm_Rendererを使用）")]
+        private GameObject m_VisualObject;
+
         [Header("テレポート設定")]
         [SerializeField, Tooltip("テレポート後の再テレポート防止クールダウン（秒）")]
         private float m_TeleportCooldown = 0.5f;
@@ -49,6 +52,9 @@ namespace Spinner
         private MaterialPropertyBlock m_PropertyBlock;
 
         private float m_TeleportCooldownTimer;
+
+        private IDisposable m_HideVisualHandle;
+        private UseRefCounter m_TeleportVisualRefCounter = new();
 
         private TeleportManager TeleportManager => ServiceLocator.Service<TeleportManager>();
 
@@ -71,7 +77,23 @@ namespace Spinner
                 m_Renderer = GetComponent<Renderer>();
             }
 
+            // ビジュアルオブジェクトが未設定の場合、Rendererを持つGameObjectを使用
+            if (m_VisualObject == null && m_Renderer != null)
+            {
+                m_VisualObject = m_Renderer.gameObject;
+            }
+
             m_PropertyBlock = new MaterialPropertyBlock();
+
+            m_TeleportVisualRefCounter.OnUse += () =>
+            {
+                HideVisual();
+            };
+
+            m_TeleportVisualRefCounter.OnReleased += () =>
+            {
+                ShowVisual();
+            };
         }
 
         protected override void LateAwake()
@@ -92,6 +114,10 @@ namespace Spinner
             {
                 m_Rigidbody.onCollisionEnter -= OnCollisionStart;
             }
+
+            // UseRefCounterのhandleをクリーンアップ
+            m_HideVisualHandle?.Dispose();
+            m_HideVisualHandle = null;
         }
 
         /// <summary>
@@ -137,6 +163,9 @@ namespace Spinner
             if (TeleportManager != null && TeleportManager.TryTeleport(teleportZone, this))
             {
                 m_TeleportCooldownTimer = m_TeleportCooldown;
+
+                m_HideVisualHandle?.Dispose();
+                m_HideVisualHandle = m_TeleportVisualRefCounter.Use();
             }
         }
 
@@ -275,11 +304,38 @@ namespace Spinner
 
             m_Rigidbody.velocity = velocity;
 
+            m_HideVisualHandle?.Dispose();
+            m_HideVisualHandle = null;
+
             AppLogger.Log($"[Puck] テレポート完了: Pos={targetPosition}, Vel={velocity}");
         }
 
         /// <summary>
-        /// パックをリセット（ゴール後など）
+        /// ビジュアルを非表示にする
+        /// </summary>
+        private void HideVisual()
+        {
+            if (m_VisualObject != null)
+            {
+                m_VisualObject.SetActive(false);
+                AppLogger.Log("[Puck] ビジュアル非表示");
+            }
+        }
+
+        /// <summary>
+        /// ビジュアルを再表示する
+        /// </summary>
+        private void ShowVisual()
+        {
+            if (m_VisualObject != null)
+            {
+                m_VisualObject.SetActive(true);
+                AppLogger.Log("[Puck] ビジュアル再表示");
+            }
+        }
+
+        /// <summary>
+        /// パックをリセット
         /// </summary>
         public void ResetPuck(Vector3 position, Vector3 initialVelocity = default)
         {
