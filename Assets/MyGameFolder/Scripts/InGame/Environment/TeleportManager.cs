@@ -1,18 +1,16 @@
-using System;
 using System.Collections.Generic;
-using PurrNet;
 using PurrNet.Prediction;
-using PurrNet.Transports;
 using UnityEngine;
 
 namespace Spinner
 {
     /// <summary>
-    /// テレポートゾーンの管理・シャッフル同期を行うマネージャー。
+    /// テレポートゾーンの管理を行うユーティリティサービス。
     /// シーンに1つ配置し、全TeleportZoneを管理する。
-    /// PurrNetのNetworkBehaviourとして動作し、ObserversRpcでシャッフルを同期する。
+    /// シャッフルのタイミングや状態はPredictedStateNode（RoundRunningState）が管理する。
+    /// このクラス自体はNetworkBehaviourではなく、予測ループから呼び出される純粋なサービス。
     /// </summary>
-    public class TeleportManager : NetworkBehaviour
+    public class TeleportManager : MonoBehaviour
     {
         [Header("テレポートゾーン")]
         [SerializeField, Tooltip("1Pエリア（左側）のテレポートゾーン配置スロット")]
@@ -21,22 +19,15 @@ namespace Spinner
         [SerializeField, Tooltip("2Pエリア（右側）のテレポートゾーン配置スロット")]
         private List<Transform> m_RightSlots = new();
 
-        [Header("シャッフル設定")]
-        [SerializeField, Tooltip("シャッフル間隔（秒）")]
-        private float m_ShuffleIntervalSeconds = 15f;
-
-        [SerializeField, Tooltip("最初のシャッフルまでの遅延（秒）")]
-        private float m_InitialDelaySeconds = 10f;
-
-        [SerializeField, Tooltip("シャッフルを有効にする")]
-        private bool m_ShuffleEnabled = true;
-
         private readonly List<TeleportZone> m_LeftZones = new();
         private readonly List<TeleportZone> m_RightZones = new();
 
         private readonly Dictionary<TeleportZone, TeleportZone> m_PairMap = new();
 
-        private float m_ShuffleTimer;
+        /// <summary>初期収集時のカラーID（シャッフル計算のベース。変更されない）</summary>
+        private TeleportColorId[] m_OriginalLeftColors;
+        private TeleportColorId[] m_OriginalRightColors;
+
         private bool m_Initialized;
 
         // 各色に対応するビジュアルカラー
@@ -54,81 +45,51 @@ namespace Spinner
             ServiceLocator.Register(this);
         }
 
-        protected override void OnDestroy()
+        private void OnDestroy()
         {
-            base.OnDestroy();
             ServiceLocator.Unregister<TeleportManager>();
         }
 
-        /// <summary>
-        /// ネットワーク生成後に呼ばれる（サーバー・クライアント両方）
-        /// </summary>
-        protected override void OnSpawned(bool asServer)
-        {
-            base.OnSpawned(asServer);
+        // ────────────────────────────────────────────
+        //  初期化
+        // ────────────────────────────────────────────
 
+        /// <summary>
+        /// テレポートシステムを初期化する。
+        /// RoundRunningState.Enter() から呼ばれる。
+        /// </summary>
+        public void Initialize()
+        {
             if (!m_Initialized)
             {
                 CollectZones();
+                SaveOriginalColors();
                 BuildPairMap();
                 ApplyVisualColors();
                 m_Initialized = true;
             }
-
-            if (asServer)
-            {
-                m_ShuffleTimer = m_InitialDelaySeconds;
-            }
         }
+
+        // ────────────────────────────────────────────
+        //  シャッフル（予測ループから呼び出し）
+        // ────────────────────────────────────────────
 
         /// <summary>
-        /// Round開始時に呼ばれる初期同期メソッド（公開インターフェース）
-        /// State管理から呼び出される
+        /// シード値からシャッフルを適用する。
+        /// 予測ループ内から呼ばれる（RoundRunningStateのSetUnityState）。
+        /// 初期カラーIDをベースにシャッフルするため、同じシードなら何度呼んでも同じ結果になる（冪等）。
         /// </summary>
-        public void InitializeForRound()
+        public void ApplyShuffleFromSeed(uint seed)
         {
-            if (!isServer) return;
+            if (!m_Initialized) return;
 
-            if (!m_Initialized)
-            {
-                CollectZones();
-                BuildPairMap();
-                ApplyVisualColors();
-                m_Initialized = true;
-            }
+            var random = PredictedRandom.Create(seed);
+            var leftColors = CalculateShuffledColors(m_OriginalLeftColors, ref random);
+            var rightColors = CalculateShuffledColors(m_OriginalRightColors, ref random);
 
-            SyncInitialState();
-        }
-
-        /// <summary>
-        /// サーバーが初期状態を全クライアントに同期する
-        /// </summary>
-        private void SyncInitialState()
-        {
-            if (!isServer) return;
-
-            var leftColors = m_LeftZones.ConvertAll(z => z.ColorId).ToArray();
-            var rightColors = m_RightZones.ConvertAll(z => z.ColorId).ToArray();
-            uint seed = 0;
-            ShuffleZones_ObserversRpc(seed, leftColors, rightColors);
-        }
-
-        private void Update()
-        {
-            if (!isServer || !m_ShuffleEnabled) return;
-
-            m_ShuffleTimer -= Time.deltaTime;
-            if (m_ShuffleTimer <= 0f)
-            {
-                m_ShuffleTimer = m_ShuffleIntervalSeconds;
-
-                uint seed = (uint)UnityEngine.Random.Range(0, int.MaxValue);
-                var random = PredictedRandom.Create(seed);
-                var leftColors = CalculateShuffledColors(m_LeftZones, ref random);
-                var rightColors = CalculateShuffledColors(m_RightZones, ref random);
-
-                ShuffleZones_ObserversRpc(seed, leftColors, rightColors);
-            }
+            ApplyColorIds(m_LeftZones, leftColors, "Left");
+            ApplyColorIds(m_RightZones, rightColors, "Right");
+            BuildPairMap();
         }
 
         // ────────────────────────────────────────────
@@ -173,6 +134,22 @@ namespace Spinner
 
                 return a.transform.position.x.CompareTo(b.transform.position.x);
             });
+        }
+
+        /// <summary>初期カラーIDを保存する（シャッフル計算のベースとして使用）</summary>
+        private void SaveOriginalColors()
+        {
+            m_OriginalLeftColors = new TeleportColorId[m_LeftZones.Count];
+            for (int i = 0; i < m_LeftZones.Count; i++)
+            {
+                m_OriginalLeftColors[i] = m_LeftZones[i].ColorId;
+            }
+
+            m_OriginalRightColors = new TeleportColorId[m_RightZones.Count];
+            for (int i = 0; i < m_RightZones.Count; i++)
+            {
+                m_OriginalRightColors[i] = m_RightZones[i].ColorId;
+            }
         }
 
         /// <summary>同じ ColorId のゾーンをペアとして登録</summary>
@@ -274,26 +251,6 @@ namespace Spinner
             return true;
         }
 
-        [ObserversRpc(bufferLast: true, channel: Channel.ReliableOrdered, runLocally: true)]
-        private void ShuffleZones_ObserversRpc(uint seed, TeleportColorId[] leftColors, TeleportColorId[] rightColors)
-        {
-            ApplyShuffle(seed, leftColors, rightColors);
-        }
-
-        /// <summary>
-        /// シード値を使って左右それぞれのゾーン配置をシャッフルする。
-        /// 同じシードなら全クライアントで同じ結果になる。
-        /// PredictedRandomを使用して完全な決定性を保証。
-        /// </summary>
-        private void ApplyShuffle(uint seed, TeleportColorId[] leftColors, TeleportColorId[] rightColors)
-        {
-            AppLogger.Log($"[TeleportManager] シャッフル実行: Seed={seed}");
-
-            ApplyColorIds(m_LeftZones, leftColors, "Left");
-            ApplyColorIds(m_RightZones, rightColors, "Right");
-            BuildPairMap();
-        }
-
         /// <summary>
         /// 受信したColorId配列をゾーンに適用する
         /// </summary>
@@ -319,23 +276,20 @@ namespace Spinner
         }
 
         /// <summary>
-        /// ゾーンリストの各ゾーンのColorIdをシャッフルした結果を計算する。
+        /// 初期カラーID配列をシャッフルした結果を計算する。
         /// Fisher-Yatesアルゴリズムで決定的シャッフル。
         /// PredictedRandomを使用して全クライアントで同じ結果を保証。
+        /// 入力のoriginalColorsは変更されない。
         /// </summary>
-        private TeleportColorId[] CalculateShuffledColors(List<TeleportZone> zones, ref PredictedRandom random)
+        private TeleportColorId[] CalculateShuffledColors(TeleportColorId[] originalColors, ref PredictedRandom random)
         {
-            int count = zones.Count;
+            int count = originalColors.Length;
             if (count <= 1)
             {
-                return zones.ConvertAll(z => z.ColorId).ToArray();
+                return (TeleportColorId[])originalColors.Clone();
             }
 
-            var colorIds = new TeleportColorId[count];
-            for (int i = 0; i < count; i++)
-            {
-                colorIds[i] = zones[i].ColorId;
-            }
+            var colorIds = (TeleportColorId[])originalColors.Clone();
 
             // Fisher-Yatesシャッフル
             for (int i = count - 1; i >= 1; i--)
@@ -347,32 +301,6 @@ namespace Spinner
             }
 
             return colorIds;
-        }
-
-        /// <summary>シャッフルの有効/無効を切り替え</summary>
-        public void SetShuffleEnabled(bool enabled)
-        {
-            m_ShuffleEnabled = enabled;
-        }
-
-        /// <summary>シャッフル間隔を変更</summary>
-        public void SetShuffleInterval(float seconds)
-        {
-            m_ShuffleIntervalSeconds = seconds;
-        }
-
-        /// <summary>手動でシャッフルを実行（サーバーのみ）</summary>
-        public void ForceShuffleFromServer()
-        {
-            if (!isServer) return;
-
-            uint seed = (uint)UnityEngine.Random.Range(0, int.MaxValue);
-            var random = PredictedRandom.Create(seed);
-
-            var leftColors = CalculateShuffledColors(m_LeftZones, ref random);
-            var rightColors = CalculateShuffledColors(m_RightZones, ref random);
-
-            ShuffleZones_ObserversRpc(seed, leftColors, rightColors);
         }
 
 #if UNITY_EDITOR
@@ -391,13 +319,8 @@ namespace Spinner
             }
 
             uint seed = (uint)UnityEngine.Random.Range(0, int.MaxValue);
-            var random = PredictedRandom.Create(seed);
-
-            var leftColors = CalculateShuffledColors(m_LeftZones, ref random);
-            var rightColors = CalculateShuffledColors(m_RightZones, ref random);
-
-            AppLogger.Log($"[TeleportManager] エディタテストシャッフル開始");
-            ApplyShuffle(seed, leftColors, rightColors);
+            ApplyShuffleFromSeed(seed);
+            AppLogger.Log($"[TeleportManager] エディタテストシャッフル: Seed={seed}");
         }
 #endif
 

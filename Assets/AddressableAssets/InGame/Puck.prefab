@@ -131,7 +131,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Spinner.Puck
   m_MaxSpeed: 50
-  m_ConstantSpeed: 5
+  m_ConstantSpeed: 25
   m_Friction: 0
   m_MaintainConstantSpeed: 1
   m_WallBounceRetention: 1

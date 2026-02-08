@@ -48,8 +48,6 @@ namespace Spinner
             m_ColorId = newColorId;
             ApplyVisualColor(visualColor);
         }
-
-        /// <summary>所属エリア (0=1P, 1=2P)</summary>
         public int TeamSide => m_TeamSide;
 
         /// <summary>
@@ -130,27 +128,23 @@ namespace Spinner
 
         private void OnValidate()
         {
-            // トリガーが設定されていなければ自動で設定
             var col = GetComponent<Collider>();
             if (col != null && !col.isTrigger)
             {
                 col.isTrigger = true;
             }
 
-            // Rigidbodyが必要（PurrNetの予測システムでトリガーを動作させるため）
             var rb = GetComponent<Rigidbody>();
             if (rb == null)
             {
                 rb = gameObject.AddComponent<Rigidbody>();
             }
 
-            // Kinematicに設定（動かないオブジェクト）
             if (!rb.isKinematic)
             {
                 rb.isKinematic = true;
             }
 
-            // 重力を無効化
             rb.useGravity = false;
         }
 

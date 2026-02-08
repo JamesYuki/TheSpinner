@@ -145,13 +145,8 @@ namespace Spinner
             if (m_TeleportCooldownTimer > 0f)
                 return;
 
-            var teleportZone = other.GetComponent<TeleportZone>();
-            if (teleportZone == null)
+            if (!other.CompareTag(Tags.TeleportZone))
                 return;
-
-            // テレポート前に現在速度を保存し、パックを停止させる
-            float currentSpeed = GetCurrentSpeed();
-            teleportZone.SetEntrySpeed(currentSpeed);
 
             // パックを完全に停止（直線速度と回転速度の両方をゼロに）
             if (m_Rigidbody != null)
@@ -159,6 +154,13 @@ namespace Spinner
                 m_Rigidbody.velocity = Vector3.zero;
                 m_Rigidbody.angularVelocity = Vector3.zero;
             }
+
+            var teleportZone = other.GetComponent<TeleportZone>();
+            if (teleportZone == null)
+                return;
+
+            float currentSpeed = GetCurrentSpeed();
+            teleportZone.SetEntrySpeed(currentSpeed);
 
             if (TeleportManager != null && TeleportManager.TryTeleport(teleportZone, this))
             {

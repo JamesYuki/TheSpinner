@@ -1059,15 +1059,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c7c2ecc4ec24ea449e73bf37ce2631c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Spinner.TeleportManager
-  _isSetup: 0
-  _prefabId: -2147483648
-  _componentIndex: -2147483648
-  _shouldBePooled: 0
-  _parent: {fileID: 0}
-  _invertedPathToNearestParent: 
-  _directChildren: []
-  _networkRules: {fileID: 0}
-  _visitiblityRules: {fileID: 0}
   m_LeftSlots:
   - {fileID: 212131657}
   - {fileID: 29155521}
@@ -1076,9 +1067,6 @@ MonoBehaviour:
   - {fileID: 933909687}
   - {fileID: 1994161487}
   - {fileID: 795848517}
-  m_ShuffleIntervalSeconds: 25
-  m_InitialDelaySeconds: 25
-  m_ShuffleEnabled: 1
 --- !u!4 &650272739
 Transform:
   m_ObjectHideFlags: 0
@@ -3887,6 +3875,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_PuckPrefab: {fileID: 1698145007259213196, guid: 9045eeb972497434aa59483a1ab0f5fe, type: 3}
   m_PuckSpawnPoint: {fileID: 123656356}
+  m_ShuffleIntervalSeconds: 15
+  m_InitialShuffleDelay: 25
+  m_ShuffleEnabled: 1
 --- !u!4 &1972641382
 Transform:
   m_ObjectHideFlags: 0

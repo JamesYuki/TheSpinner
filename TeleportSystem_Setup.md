@@ -3,6 +3,12 @@
 ## 概要
 パックを1P/2P間でテレポートさせるシステムです。同じ色のテレポートゾーンがペアとなり、時間経過でランダムにシャッフルされます。
 
+### アーキテクチャ
+- **TeleportManager** — 純粋な`MonoBehaviour`ユーティリティサービス（`NetworkBehaviour`ではない）
+  - ゾーン収集・ペアマッピング・テレポート実行・シャッフル適用
+- **RoundRunningState** — `PredictedStateNode`内でシャッフルタイマーと`PredictedRandom`を管理
+  - シャッフルの状態が予測ステートの一部としてロールバック・リプレイに対応
+
 ---
 
 ## 1. TeleportManager のセットアップ
@@ -10,7 +16,7 @@
 ### 1.1 TeleportManager オブジェクトの作成
 1. シーンに空の GameObject を作成（例: "TeleportManager"）
 2. `TeleportManager` コンポーネントをアタッチ
-3. **重要**: `NetworkIdentity` コンポーネントが自動追加されます（PurrNetの`NetworkBehaviour`を継承しているため）
+3. **注意**: `NetworkIdentity` は不要です（純粋なMonoBehaviourのため）
 
 ### 1.2 スロット位置の設定
 テレポートゾーンがシャッフルで移動する「配置位置」を定義します。
@@ -30,9 +36,13 @@
 2. これらを `Right Slots` リストに追加
 
 ### 1.3 シャッフル設定
+シャッフルの設定は **RoundRunningState** コンポーネントの Inspector で行います：
 - `Shuffle Interval Seconds`: シャッフル間隔（デフォルト: 15秒）
-- `Initial Delay Seconds`: 最初のシャッフルまでの遅延（デフォルト: 10秒）
+- `Initial Shuffle Delay`: 最初のシャッフルまでの遅延（デフォルト: 10秒）
 - `Shuffle Enabled`: チェックを入れて有効化
+
+> **注意**: シャッフルは PredictedStateNode の StateSimulate 内で実行されるため、
+> 予測・ロールバックに完全対応しています。
 
 ---
 
@@ -126,16 +136,16 @@ Inspector で `PredictedRigidbody` を開く:
   - デフォルトは `0x3F` (全イベント有効) なので通常問題なし
   - もし `None` になっていたら、手動で `TriggerEnter` を有効化
 
-#### チェック4: TeleportManager がスポーンされているか
+#### チェック4: TeleportManager が配置されているか
 ```
 [TeleportManager] 左ゾーン: 3, 右ゾーン: 3
 [TeleportManager] ペア構築: Red (左 ↔ 右)
 ```
-→ ゲーム開始時にこのログが出ない場合、TeleportManager が正しくスポーンされていません。
+→ ゲーム開始時にこのログが出ない場合、TeleportManager が正しく配置されていません。
 
 **解決策**:
-- TeleportManager に `NetworkIdentity` があるか確認
-- シーンに配置されたオブジェクトは PurrNet が自動でスポーンします
+- TeleportManager がシーンに配置されているか確認
+- TeleportManager は純粋なMonoBehaviourなので NetworkIdentity は不要です
 
 #### チェック5: 物理レイヤー設定
 Project Settings > Physics で以下を確認:
@@ -146,13 +156,13 @@ Project Settings > Physics で以下を確認:
 
 ### ❌ シャッフルが動作しない
 
-#### チェック1: サーバーで実行されているか
-シャッフルはサーバー（ホスト）のみが実行します。
-- Host として起動しているか確認
-- Client として参加している場合、サーバーからの同期を待ちます
+#### チェック1: 予測ループ内で実行されているか
+シャッフルは RoundRunningState.StateSimulate 内で実行されます。
+- RoundRunningState が正しくステートマシンに登録されているか確認
+- ラウンドが開始しているか（Enter が呼ばれているか）確認
 
 #### チェック2: Shuffle Enabled がオンか
-TeleportManager の Inspector で `Shuffle Enabled` にチェックが入っているか確認。
+RoundRunningState の Inspector で `Shuffle Enabled` にチェックが入っているか確認。
 
 #### チェック3: スロット数とゾーン数
 - Left Slots と Left ゾーンの数が一致しているか
@@ -199,9 +209,10 @@ AppLoggerSettings.EnableEditorLog = true;
 
 ## 7. 動作フロー
 
-1. **初期化** (TeleportManager.OnSpawned):
-   - シーン内の全 TeleportZone を収集
+1. **初期化** (RoundRunningState.Enter):
+   - TeleportManager.Initialize() でシーン内の全 TeleportZone を収集
    - 同じ ColorId のペアを構築
+   - PredictedRandom で初期シャッフルを適用
 
 2. **トリガー検知** (Puck.OnTriggerStart):
    - パックが TeleportZone のトリガーに入る
@@ -212,11 +223,10 @@ AppLoggerSettings.EnableEditorLog = true;
    - パックの位置をペアの ExitPosition に設定
    - パックの速度を ExitForward に沿って設定
 
-4. **シャッフル** (サーバーのみ):
-   - タイマーが 0 になると新しいシード値を生成
-   - ObserversRpc で全クライアントに送信
-   - 同じシードで Fisher-Yates シャッフルを実行
-   - ゾーンをシャッフルされたスロット位置に移動
+4. **シャッフル** (RoundRunningState.StateSimulate 予測ループ内):
+   - タイマーが 0 になると PredictedRandom から新しいシードを生成
+   - TeleportManager.ApplyShuffleFromSeed() で決定的シャッフルを実行
+   - ロールバック時は SetUnityState() でゾーン状態を復元
 
 ---
 
@@ -241,13 +251,11 @@ AppLoggerSettings.EnableEditorLog = true;
 ## 9. カスタマイズ
 
 ### シャッフルを手動で実行
-```csharp
-TeleportManager.Instance.ForceShuffleFromServer();
-```
+RoundRunningState の Inspector からシャッフルタイマーをリセットするか、
+エディタ上で TeleportManager の ContextMenu "Test Shuffle" を使用。
 
 ### シャッフル間隔を動的に変更
-```csharp
-TeleportManager.Instance.SetShuffleInterval(20f); // 20秒間隔
+RoundRunningState の Inspector で `Shuffle Interval Seconds` を変更。
 ```
 
 ### 色を追加

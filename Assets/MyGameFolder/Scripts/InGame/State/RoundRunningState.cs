@@ -2,7 +2,6 @@ using PurrNet;
 using PurrNet.Pooling;
 using PurrNet.Prediction;
 using PurrNet.Prediction.StateMachine;
-using R3;
 using UnityEngine;
 
 namespace Spinner
@@ -15,9 +14,32 @@ namespace Spinner
 
         [SerializeField, Tooltip("パックの初期位置")]
         private Transform m_PuckSpawnPoint;
+
+        [Header("シャッフル設定")]
+        [SerializeField, Tooltip("シャッフル間隔（秒）")]
+        private float m_ShuffleIntervalSeconds = 15f;
+
+        [SerializeField, Tooltip("最初のシャッフルまでの遅延（秒）")]
+        private float m_InitialShuffleDelay = 10f;
+
+        [SerializeField, Tooltip("シャッフルを有効にする")]
+        private bool m_ShuffleEnabled = true;
         private void Awake()
         {
             // PlayerHealth.OnDeathHandler += OnPlayerDeath;
+        }
+
+        protected override void LateAwake()
+        {
+            base.LateAwake();
+
+            // シャッフルモジュールを登録（予測ループ内で自動管理される）
+            _ = new TeleportShuffleModule(
+                this,
+                m_ShuffleIntervalSeconds,
+                m_InitialShuffleDelay,
+                m_ShuffleEnabled
+            );
         }
 
         protected override void OnDestroy()
@@ -44,35 +66,34 @@ namespace Spinner
             {
                 state.players.Add(predictionManager.players.currentState.players[i]);
             }
+
+            // テレポートシステムの初期化（全クライアント）
+            var teleportManager = ServiceLocator.Service<TeleportManager>();
+            if (teleportManager != null)
+            {
+                teleportManager.Initialize();
+            }
+
             currentState = state;
+
+            AppLogger.Log("[RoundRunning] テレポートシステムを初期化しました");
 
             ServiceLocator.Service<InGameUIManager>().ActiveStateUI(this);
 
-            // テレポートシステムの初期化（サーバーのみ）
-            if (predictionManager.isServer)
+            // パックを生成
+            if (m_PuckPrefab != null && m_PuckSpawnPoint != null)
             {
-                var teleportManager = ServiceLocator.Service<TeleportManager>();
-                if (teleportManager != null)
-                {
-                    teleportManager.InitializeForRound();
-                    AppLogger.Log("[RoundRunning] テレポートシステムを初期化しました");
-                }
-
-                // パックを生成
-                if (m_PuckPrefab != null && m_PuckSpawnPoint != null)
-                {
-                    var puckId = predictionManager.hierarchy.Create(
-                        m_PuckPrefab,
-                        m_PuckSpawnPoint.position,
-                        m_PuckSpawnPoint.rotation,
-                        null // パックはオーナーなし
-                    );
-                    AppLogger.Log($"[RoundRunning] パックを生成しました: PuckID={puckId}");
-                }
-                else
-                {
-                    AppLogger.LogWarning("[RoundRunning] パックプレハブまたはスポーン位置が設定されていません");
-                }
+                var puckId = predictionManager.hierarchy.Create(
+                    m_PuckPrefab,
+                    m_PuckSpawnPoint.position,
+                    m_PuckSpawnPoint.rotation,
+                    null // パックはオーナーなし
+                );
+                AppLogger.Log($"[RoundRunning] パックを生成しました: PuckID={puckId}");
+            }
+            else
+            {
+                AppLogger.LogWarning("[RoundRunning] パックプレハブまたはスポーン位置が設定されていません");
             }
         }
 
@@ -119,6 +140,7 @@ namespace Spinner
         public struct State : IPredictedData<State>
         {
             public DisposableList<PlayerID> players;
+
             public void Dispose()
             {
                 if (!players.isDisposed)

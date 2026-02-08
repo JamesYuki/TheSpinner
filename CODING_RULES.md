@@ -9,6 +9,65 @@
 ### PurrNet 関連
 **細かい仕様は  "PurrNet_Documents.md"を確認して**
 
+#### Manager系は予測ループ内で実行する
+**Manager系のゲームロジックは必ず予測ループ内で実行すること。**
+
+- `NetworkBehaviour` の `Update()` や `ObserversRpc` でゲーム状態を同期しない
+- ロジックが増える場合は `PredictedModule<TState>` で独立モジュールに分離する
+- Manager自体は純粋な `MonoBehaviour`（ServiceLocator登録）とし、予測ループから呼び出す
+
+#### PredictedModule でロジックを分離する
+**PredictedStateNode に複数のルールを追加する場合、`PredictedModule<TState>` を使ってルール毎にモジュール分離する。**
+
+- モジュールは独自の State を持ち、ロールバック・リプレイは PurrNet が自動管理する
+- `LateAwake()` で `new MyModule(this)` するだけで登録完了
+- `Simulate(ref TState state, float delta)` — 状態更新のみ（副作用なし）
+- `UpdateView(TState viewState, TState? verifiedState)` — ビジュアル適用（フレーム毎1回、リプレイ中は呼ばれない）
+- タイマー・乱数・シードなど予測対象のデータはモジュールの State に含める
+
+```csharp
+// ✅ 正しいパターン: PredictedModule で独立管理
+public class ShuffleModule : PredictedModule<ShuffleModule.ShuffleState>
+{
+    public ShuffleModule(PredictedIdentity identity) : base(identity) { }
+
+    protected override void Simulate(ref ShuffleState state, float delta)
+    {
+        state.Timer -= delta;
+        if (state.Timer <= 0f)
+        {
+            state.Timer = interval;
+            state.Seed = state.Random.Next();
+        }
+    }
+
+    // ビジュアルはここで適用（リプレイ中は呼ばれないので安全）
+    protected override void UpdateView(ShuffleState viewState, ShuffleState? verifiedState)
+    {
+        ServiceLocator.Service<SomeManager>()?.ApplyFromSeed(viewState.Seed);
+    }
+
+    public struct ShuffleState : IPredictedData<ShuffleState>
+    {
+        public float Timer;
+        public PredictedRandom Random;
+        public uint Seed;
+        public void Dispose() { }
+    }
+}
+
+// RoundRunningState での登録
+protected override void LateAwake()
+{
+    base.LateAwake();
+    _ = new ShuffleModule(this);
+}
+
+// ❌ 間違ったパターン: StateNode に直接ルールを詰め込む
+// → State 構造体が肥大化し、各ルールのロールバック管理が複雑になる
+```}
+```
+
 #### hierarchy.Create の使い方
 `hierarchy.Create` は `PredictedObjectID?` を返す。`GameObject` ではない。
 
